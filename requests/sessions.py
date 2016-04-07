@@ -288,6 +288,7 @@ class Session(SessionRedirectMixin):
       <Response [200]>
     """
 
+    # TODO: What is this?
     __attrs__ = [
         'headers', 'cookies', 'auth', 'proxies', 'hooks', 'params', 'verify',
         'cert', 'prefetch', 'adapters', 'stream', 'trust_env',

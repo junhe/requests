@@ -38,7 +38,7 @@ TARPIT = 'http://10.255.255.1'
 class TestRequests:
 
     def test_entry_points(self):
-
+        # It makes sure that they have these entities
         requests.session
         requests.session().get
         requests.session().head

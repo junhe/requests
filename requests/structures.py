@@ -38,8 +38,14 @@ class CaseInsensitiveDict(collections.MutableMapping):
     operations are given keys that have equal ``.lower()``s, the
     behavior is undefined.
 
+    A class like this one can reduce error since occassional
+    wrong key case won't have KeyError.
     """
     def __init__(self, data=None, **kwargs):
+        """
+        This is a regular constructor of dict. data can be mapping or an
+        iterable. kwargs will become k-v pairs in the dict.
+        """
         self._store = dict()
         if data is None:
             data = {}
@@ -48,6 +54,7 @@ class CaseInsensitiveDict(collections.MutableMapping):
     def __setitem__(self, key, value):
         # Use the lowercased key for lookups, but store the actual
         # key alongside the value.
+        # Always use lowercase keys
         self._store[key.lower()] = (key, value)
 
     def __getitem__(self, key):

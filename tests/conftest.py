@@ -15,6 +15,7 @@ def prepare_url(value):
 
 @pytest.fixture
 def httpbin(httpbin):
+    print httpbin
     return prepare_url(httpbin)
 
 
