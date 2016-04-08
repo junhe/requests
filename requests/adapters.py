@@ -36,6 +36,7 @@ from .exceptions import (ConnectionError, ConnectTimeout, ReadTimeout, SSLError,
                          ProxyError, RetryError)
 from .auth import _basic_auth_str
 
+# Default values defined in the same file of usage
 DEFAULT_POOLBLOCK = False
 DEFAULT_POOLSIZE = 10
 DEFAULT_RETRIES = 0
@@ -46,9 +47,11 @@ class BaseAdapter(object):
     """The Base Transport Adapter"""
 
     def __init__(self):
+        # TODO: why calling this?
         super(BaseAdapter, self).__init__()
 
     def send(self):
+        # Use Notimplementederror instead of abstract class
         raise NotImplementedError
 
     def close(self):
@@ -81,6 +84,7 @@ class HTTPAdapter(BaseAdapter):
       >>> a = requests.adapters.HTTPAdapter(max_retries=3)
       >>> s.mount('http://', a)
     """
+    # TODO: why defining __attrs__ ?
     __attrs__ = ['max_retries', 'config', '_pool_connections', '_pool_maxsize',
                  '_pool_block']
 
@@ -88,6 +92,7 @@ class HTTPAdapter(BaseAdapter):
                  pool_maxsize=DEFAULT_POOLSIZE, max_retries=DEFAULT_RETRIES,
                  pool_block=DEFAULT_POOLBLOCK):
         if max_retries == DEFAULT_RETRIES:
+            # Retry is a class from urllib3
             self.max_retries = Retry(0, read=False)
         else:
             self.max_retries = Retry.from_int(max_retries)

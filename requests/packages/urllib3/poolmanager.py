@@ -14,7 +14,11 @@ from .request import RequestMethods
 from .util.url import parse_url
 from .util.retry import Retry
 
-
+# __all__ override the default symbols that will be exported via
+# from poolmanager import *. And it only affects this type of import.
+# You still can import any symbol by from poolmanager import symbol.
+# More: http://stackoverflow.com/questions/44834/can-someone-explain-all-in-python
+# https://docs.python.org/2/tutorial/modules.html#importing-from-a-package
 __all__ = ['PoolManager', 'ProxyManager', 'proxy_from_url']
 
 
