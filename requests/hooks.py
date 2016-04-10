@@ -22,6 +22,11 @@ def default_hooks():
 
 def dispatch_hook(key, hooks, hook_data, **kwargs):
     """Dispatches a hook dictionary on a given piece of data."""
+    # TODO: is this some kind of call back?
+
+    # Hmm, never used this. It is equivelant to
+    # hooks if hooks else dict(). return hooks it is not empty,
+    # otherwise return dict()
     hooks = hooks or dict()
     hooks = hooks.get(key)
     if hooks:

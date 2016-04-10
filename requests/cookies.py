@@ -177,6 +177,10 @@ class RequestsCookieJar(cookielib.CookieJar, collections.MutableMapping):
     Unlike a regular CookieJar, this class is pickleable.
 
     .. warning:: dictionary operations that are normally O(1) may be O(n).
+
+    Note: this class inheritate from both cookielib.CookieJar and
+    collections.MutableMapping. I guess this is to force providing dictionary
+    interface for cookielib.CookieJar.
     """
     def get(self, name, default=None, domain=None, path=None):
         """Dict-like get() that also supports optional domain and path args in
@@ -214,6 +218,7 @@ class RequestsCookieJar(cookielib.CookieJar, collections.MutableMapping):
     def keys(self):
         """Dict-like keys() that returns a list of names of cookies from the
         jar. See values() and items()."""
+        # return a list of keys just for convenience?
         return list(self.iterkeys())
 
     def itervalues(self):
@@ -230,6 +235,8 @@ class RequestsCookieJar(cookielib.CookieJar, collections.MutableMapping):
     def iteritems(self):
         """Dict-like iteritems() that returns an iterator of name-value tuples
         from the jar. See iterkeys() and itervalues()."""
+        # Does iter() uses __iter__()? What's the default implementation of
+        # __iter__? Is it in MutableMapping?
         for cookie in iter(self):
             yield cookie.name, cookie.value
 
@@ -339,10 +346,14 @@ class RequestsCookieJar(cookielib.CookieJar, collections.MutableMapping):
         and optionally domain and path."""
         toReturn = None
         for cookie in iter(self):
+            # I think it is a good practice here to use multiple if's instead
+            # of one big if. The current implementation makes the logic clear.
             if cookie.name == name:
                 if domain is None or cookie.domain == domain:
                     if path is None or cookie.path == path:
                         if toReturn is not None:  # if there are multiple cookies that meet passed in criteria
+                            # This Error is an empty subclass of RuntimeError
+                            # It is defined in this file
                             raise CookieConflictError('There are multiple cookies with name, %r' % (name))
                         toReturn = cookie.value  # we will eventually return this as long as no cookie conflict
 
@@ -352,6 +363,9 @@ class RequestsCookieJar(cookielib.CookieJar, collections.MutableMapping):
 
     def __getstate__(self):
         """Unlike a normal CookieJar, this class is pickleable."""
+        # __getstate__ is used to pickle (python obj to stream), it selects
+        # what attributes you want to pickle.
+        # didn't know that dict has copy(). It is a shallow one.
         state = self.__dict__.copy()
         # remove the unpickleable RLock object
         state.pop('_cookies_lock')
@@ -359,6 +373,7 @@ class RequestsCookieJar(cookielib.CookieJar, collections.MutableMapping):
 
     def __setstate__(self, state):
         """Unlike a normal CookieJar, this class is pickleable."""
+        # __setstate__ is used to unpickle (stream to python obj)
         self.__dict__.update(state)
         if '_cookies_lock' not in self.__dict__:
             self._cookies_lock = threading.RLock()
@@ -417,6 +432,7 @@ def create_cookie(name, value, **kwargs):
     result['domain_initial_dot'] = result['domain'].startswith('.')
     result['path_specified'] = bool(result['path'])
 
+    # From here we can know that cookie is represented as key-value pairs
     return cookielib.Cookie(**result)
 
 
