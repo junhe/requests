@@ -20,7 +20,10 @@ from .packages.six import iterkeys, itervalues, PY3
 
 __all__ = ['RecentlyUsedContainer', 'HTTPHeaderDict']
 
-
+# This is a good practice. Using object() is better then using "_Null"
+# because object() is unique globally. For the same reason, it is better
+# than None.
+# "_Null" is better for debugging though.
 _Null = object()
 
 

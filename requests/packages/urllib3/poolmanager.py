@@ -27,6 +27,10 @@ pool_classes_by_scheme = {
     'https': HTTPSConnectionPool,
 }
 
+# getlogger() is a function from logging package. logger object provides APIs
+# that can be called by application code directly to record information.
+# Calling getLogger with the same name will always return the reference to the
+# same logger object.
 log = logging.getLogger(__name__)
 
 SSL_KEYWORDS = ('key_file', 'cert_file', 'cert_reqs', 'ca_certs',
@@ -64,6 +68,7 @@ class PoolManager(RequestMethods):
     proxy = None
 
     def __init__(self, num_pools=10, headers=None, **connection_pool_kw):
+        # It could be super(PoolManager, self).__init__(self, headers)
         RequestMethods.__init__(self, headers)
         self.connection_pool_kw = connection_pool_kw
         self.pools = RecentlyUsedContainer(num_pools,

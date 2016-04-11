@@ -181,6 +181,9 @@ class RequestsCookieJar(cookielib.CookieJar, collections.MutableMapping):
     Note: this class inheritate from both cookielib.CookieJar and
     collections.MutableMapping. I guess this is to force providing dictionary
     interface for cookielib.CookieJar.
+
+    Cookie is represented as a dictionary, which include key 'name' and key 'value',
+    and other keys.
     """
     def get(self, name, default=None, domain=None, path=None):
         """Dict-like get() that also supports optional domain and path args in
