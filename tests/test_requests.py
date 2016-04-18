@@ -42,6 +42,8 @@ class TestRequests:
         requests.session
         requests.session().get
         requests.session().head
+
+        # The following are defined in requests/api.py
         requests.get
         requests.head
         requests.put

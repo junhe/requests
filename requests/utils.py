@@ -103,6 +103,7 @@ def get_netrc_auth(url, raise_errors=False):
 
         netrc_path = None
 
+        # Try different netrc file names and use the first one
         for f in NETRC_FILES:
             try:
                 loc = os.path.expanduser('~/{0}'.format(f))
@@ -120,16 +121,25 @@ def get_netrc_auth(url, raise_errors=False):
         if netrc_path is None:
             return
 
+        # from urlparse package
+        # Parse URLs into components
         ri = urlparse(url)
 
         # Strip port numbers from netloc. This weird `if...encode`` dance is
         # used for Python 3.2, which doesn't support unicode literals.
+        # Prefix 'b' marks byte literal
+        # >>> a = b'3f'
+        # >>> type(a)  # Python 2.7
+        # <type 'str'>
+        # >>> type(a)  # Python 3.4
+        # <class 'bytes'>
         splitstr = b':'
         if isinstance(url, str):
             splitstr = splitstr.decode('ascii')
         host = ri.netloc.split(splitstr)[0]
 
         try:
+            # netrc is imported from netrc
             _netrc = netrc(netrc_path).authenticators(host)
             if _netrc:
                 # Return with login / password
@@ -193,6 +203,9 @@ def to_key_val_list(value):
     if value is None:
         return None
 
+    # If classinfo is a tuple of class or type objects (or recursively, other
+    # such tuples), return true if object is an instance of any of the classes
+    # or types.
     if isinstance(value, (str, bytes, bool, int)):
         raise ValueError('cannot encode objects that are not 2-tuples')
 
@@ -499,6 +512,7 @@ def is_ipv4_address(string_ip):
 
 def is_valid_cidr(string_network):
     """Very simple check of the cidr format in no_proxy variable"""
+    # TODO: What does a valid look like?
     if string_network.count('/') == 1:
         try:
             mask = int(string_network.split('/')[1])
@@ -521,6 +535,9 @@ def should_bypass_proxies(url):
     """
     Returns whether we should bypass proxies or not.
     """
+    # equal to:
+    # def get_proxy(k):
+    #   return os.environ.get(k) or os.environ.get(k.upper())
     get_proxy = lambda k: os.environ.get(k) or os.environ.get(k.upper())
 
     # First check whether no_proxy is defined. If it is, check that the URL
@@ -531,6 +548,9 @@ def should_bypass_proxies(url):
     if no_proxy:
         # We need to check whether we match here. We need to see if we match
         # the end of the netloc, both with and without the port.
+        #
+        # cleaner if we keep it in one line.
+        # urls that do not have proxies
         no_proxy = (
             host for host in no_proxy.replace(' ', '').split(',') if host
         )

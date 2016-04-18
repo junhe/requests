@@ -210,6 +210,22 @@ class Request(RequestHooksMixin):
         data=None, params=None, auth=None, cookies=None, hooks=None, json=None):
 
         # Default empty dicts for dict params.
+        # Why use `is None` instead of "== None"?
+        # Comparisons to singletons like None should always be done with is or
+        # is not , never the equality operators.
+
+        # Also, beware of writing if x when you really mean if x is not None
+        # -- e.g. when testing whether a variable or argument that defaults
+        # to None was set to some other value. The other value might have a
+        # type (such as a container) that could be false in a boolean context!
+        #
+        # 'is' compares if they are the same object, '==' compares if they
+        # have the same value and '==' can be overrided by '__eq__()'
+        #
+        # More:
+        # http://stackoverflow.com/questions/7816363/if-a-vs-if-a-is-not-none
+        # http://stackoverflow.com/questions/3257919/is-none-vs-none
+        # http://jaredgrubb.blogspot.com/2009/04/python-is-none-vs-none.html
         data = [] if data is None else data
         files = [] if files is None else files
         headers = {} if headers is None else headers

@@ -53,6 +53,8 @@ def merge_setting(request_setting, session_setting, dict_class=OrderedDict):
         return session_setting
 
     # Bypass if not a dictionary (e.g. verify)
+    # this is the way to check if an object is dictionary(the general
+    # dictionary)
     if not (
             isinstance(session_setting, Mapping) and
             isinstance(request_setting, Mapping)
@@ -64,6 +66,11 @@ def merge_setting(request_setting, session_setting, dict_class=OrderedDict):
 
     # Remove keys that are set to None. Extract keys first to avoid altering
     # the dictionary during iteration.
+    # Important: this is how they delete keys in a dictionary:
+    #   Gather all the keys you want to delete and use another loop
+    #   on the keys you just got to delete. Don't not do:
+    #   for k in mydict.keys(): # don't do this.
+    #     del mydict[k]
     none_keys = [k for (k, v) in merged_setting.items() if v is None]
     for key in none_keys:
         del merged_setting[key]
@@ -137,6 +144,10 @@ class SessionRedirectMixin(object):
             prepared_request.url = to_native_string(url)
             # Cache the url, unless it redirects to itself.
             if resp.is_permanent_redirect and req.url != prepared_request.url:
+                # TODO: possible undesired behavior here as RecentlyUsedContainer
+                # is actually RecentlyReadAddContainer. Modify the value of a key
+                # won't change order. So if they change value of existing req.url,
+                # order does not change.
                 self.redirect_cache[req.url] = prepared_request.url
 
             self.rebuild_method(prepared_request, resp)
@@ -382,6 +393,7 @@ class Session(SessionRedirectMixin):
             auth = get_netrc_auth(request.url)
 
         p = PreparedRequest()
+        # prepare request for this session
         p.prepare(
             method=request.method.upper(),
             url=request.url,
@@ -446,6 +458,9 @@ class Session(SessionRedirectMixin):
             If Tuple, ('cert', 'key') pair.
         """
         # Create the Request.
+        # Request a class defined in .Models
+        # it is like a data object that to be prepared for sending over to the
+        # server.
         req = Request(
             method = method.upper(),
             url = url,
@@ -629,7 +644,9 @@ class Session(SessionRedirectMixin):
 
             # Look for requests environment configuration and be compatible
             # with cURL.
+            # Hmm, they use 'is True'
             if verify is True or verify is None:
+                # 'or' is indeed a concise way
                 verify = (os.environ.get('REQUESTS_CA_BUNDLE') or
                           os.environ.get('CURL_CA_BUNDLE'))
 

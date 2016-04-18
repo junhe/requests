@@ -53,15 +53,23 @@ class RecentlyUsedContainer(MutableMapping):
     def __getitem__(self, key):
         # Re-insert the item, moving it to the end of the eviction line.
         with self.lock:
+            # Note that dict() has pop(key), which can get the value and
+            # delete the key for you.
             item = self._container.pop(key)
             self._container[key] = item
             return item
 
     def __setitem__(self, key, value):
+        """
+        Note that overwriting value of an existing key will evict the
+        existing value (by calling dispose_func).
+        """
         evicted_value = _Null
         with self.lock:
             # Possibly evict the existing value of 'key'
             evicted_value = self._container.get(key, _Null)
+            # Note that if key already exists, the following line won't
+            # change the order of the key.
             self._container[key] = value
 
             # If we didn't evict an existing value, we might have to evict the
