@@ -48,6 +48,9 @@ def dict_to_sequence(d):
 
 
 def super_len(o):
+    """
+    Find out the length of different types of objects
+    """
     total_length = 0
     current_position = 0
 
@@ -726,8 +729,24 @@ def to_native_string(string, encoding='ascii'):
         out = string
     else:
         if is_py2:
+            # encoding: to str (native in python 2)
+            # >>> a = u'hh'
+            # >>> type(a)
+            # <type 'unicode'>
+            # >>> a.encode()
+            # 'hh'
+            # >>> type(a.encode())
+            # <type 'str'>
             out = string.encode(encoding)
         else:
+            # encoding: to byte representation (native in python 2)
+            # >>> a = b'hh'
+            # >>> a
+            # b'hh'
+            # >>> a.decode()
+            # 'hh'
+            # >>> type(a.decode())
+            # <class 'str'>
             out = string.decode(encoding)
 
     return out

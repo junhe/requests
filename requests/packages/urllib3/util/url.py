@@ -7,13 +7,18 @@ from ..exceptions import LocationParseError
 url_attrs = ['scheme', 'auth', 'host', 'port', 'path', 'query', 'fragment']
 
 
+# Hmm, inherit from namedtuple seems to be a good idea.
 class Url(namedtuple('Url', url_attrs)):
     """
     Datastructure for representing an HTTP URL. Used as a return value for
     :func:`parse_url`.
     """
-    slots = ()
+    slots = () #TODO: What is it for? It is not __slots__.
 
+    # __new__ is static method that is called to customize an instance
+    # https://docs.python.org/2/reference/datamodel.html#object.__new__
+    # TODO: why not use __init__() to do the same thing here?
+    # More efficient because object has not be created?
     def __new__(cls, scheme=None, auth=None, host=None, port=None, path=None,
                 query=None, fragment=None):
         if path and not path.startswith('/'):

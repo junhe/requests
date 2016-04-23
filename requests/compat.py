@@ -15,6 +15,7 @@ import sys
 # Syntax sugar.
 _ver = sys.version_info
 
+# This is how you find out the version of python
 #: Python 2.x?
 is_py2 = (_ver[0] == 2)
 

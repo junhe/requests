@@ -580,6 +580,8 @@ class Session(SessionRedirectMixin):
         stream = kwargs.get('stream')
         hooks = request.hooks
 
+        # MANIOHERE
+
         # Resolve URL in redirect cache, if available.
         if allow_redirects:
             checked_urls = set()

@@ -360,6 +360,7 @@ class PreparedRequest(RequestEncodingMixin, RequestHooksMixin):
         try:
             scheme, auth, host, port, path, query, fragment = parse_url(url)
         except LocationParseError as e:
+            # Pass args of one exception to another
             raise InvalidURL(*e.args)
 
         if not scheme:
@@ -437,6 +438,7 @@ class PreparedRequest(RequestEncodingMixin, RequestHooksMixin):
             content_type = 'application/json'
             body = complexjson.dumps(json)
 
+        # use all to test logic
         is_stream = all([
             hasattr(data, '__iter__'),
             not isinstance(data, (basestring, list, tuple, dict))
