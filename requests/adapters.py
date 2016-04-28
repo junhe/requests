@@ -47,7 +47,7 @@ class BaseAdapter(object):
     """The Base Transport Adapter"""
 
     def __init__(self):
-        # TODO: why calling this?
+        # TODO: why calling this? What's in 'object' you need to initialize?
         super(BaseAdapter, self).__init__()
 
     def send(self):
@@ -85,12 +85,16 @@ class HTTPAdapter(BaseAdapter):
       >>> s.mount('http://', a)
     """
     # TODO: why defining __attrs__ ?
+    # This seems to be a user defined variable. It is not a reserved
+    # attribute of Python. They use it to declare which attributes of the
+    # class need to be pickled.
     __attrs__ = ['max_retries', 'config', '_pool_connections', '_pool_maxsize',
                  '_pool_block']
 
     def __init__(self, pool_connections=DEFAULT_POOLSIZE,
                  pool_maxsize=DEFAULT_POOLSIZE, max_retries=DEFAULT_RETRIES,
                  pool_block=DEFAULT_POOLBLOCK):
+        # self.max_retries is used in conn.open() in self.send()
         if max_retries == DEFAULT_RETRIES:
             # Retry is a class from urllib3
             self.max_retries = Retry(0, read=False)
@@ -140,6 +144,17 @@ class HTTPAdapter(BaseAdapter):
         self._pool_maxsize = maxsize
         self._pool_block = block
 
+        # PoolManager is from urllib3. It keeps connections with many urls.
+        # > Allows for arbitrary requests while transparently keeping track of
+        # necessary connection pools for you.
+        # Some usage info:
+        # >>> from urllib3 import PoolManager
+        # >>> manager = PoolManager(10)
+        # >>> r = manager.request('GET', 'http://example.com')
+        # >>> r.headers['server']
+        # 'ECS (iad/182A)'
+        #
+        # BTW, why make self.poolmanager public?
         self.poolmanager = PoolManager(num_pools=connections, maxsize=maxsize,
                                        block=block, strict=True, **pool_kwargs)
 
@@ -181,12 +196,14 @@ class HTTPAdapter(BaseAdapter):
             cert_loc = None
 
             # Allow self-specified cert location.
+            # TODO: verify must be True here, why the checking?
             if verify is not True:
                 cert_loc = verify
 
             if not cert_loc:
                 cert_loc = DEFAULT_CA_BUNDLE_PATH
 
+            # TODO: why separating from above?
             if not cert_loc:
                 raise Exception("Could not find a suitable SSL CA certificate bundle.")
 
@@ -249,17 +266,35 @@ class HTTPAdapter(BaseAdapter):
         called from user code, and is only exposed for use when subclassing the
         :class:`HTTPAdapter <requests.adapters.HTTPAdapter>`.
 
+        Then why not make it protected?
+
         :param url: The URL to connect to.
         :param proxies: (optional) A Requests-style dictionary of proxies used on this request.
         """
+
+        # select_proxy() is from utils.
+        # we pick a proxy by url if proxies is provided.
+        # proxy is just a string of url
         proxy = select_proxy(url, proxies)
 
         if proxy:
+            # have proxy
+            # prepend_scheme_if_needed() is from utils
+            # it simply prepend 'http' to the proxy url
             proxy = prepend_scheme_if_needed(proxy, 'http')
+            # return a urllib3 ProxyManager
+            # ProxyManager is an HTTP proxy-aware subclass of PoolManager. It
+            # produces a single HTTPConnectionPool instance for all HTTP
+            # connections and individual per-server:port HTTPSConnectionPool
+            # instances for tunnelled HTTPS connections.
+            #
+            # Just consider proxy_manager is a connection pool
             proxy_manager = self.proxy_manager_for(proxy)
             conn = proxy_manager.connection_from_url(url)
         else:
             # Only scheme should be lower case
+            #
+            # No proxy, just get the connection
             parsed = urlparse(url)
             url = parsed.geturl()
             conn = self.poolmanager.connection_from_url(url)

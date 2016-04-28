@@ -323,6 +323,7 @@ class Session(SessionRedirectMixin):
         self.proxies = {}
 
         #: Event-handling hooks.
+        # default hooks is a dictionary {'response': []}
         self.hooks = default_hooks()
 
         #: Dictionary of querystring data to attach to each
@@ -355,6 +356,9 @@ class Session(SessionRedirectMixin):
 
         # Default connection adapters.
         self.adapters = OrderedDict()
+        # see, this is how your put adapters to self.adapters
+        # Well, they could inheritate from Ordereddict and put mount() to that
+        # subclass. Because essentially mount() is not for Session.
         self.mount('https://', HTTPAdapter())
         self.mount('http://', HTTPAdapter())
 
@@ -580,19 +584,26 @@ class Session(SessionRedirectMixin):
         stream = kwargs.get('stream')
         hooks = request.hooks
 
-        # MANIOHERE
-
         # Resolve URL in redirect cache, if available.
         if allow_redirects:
+            # starts empty
             checked_urls = set()
+            # We have this loop here because we may have multiple redirects.
+            # So we may need to 'de-reference' multiple times.
             while request.url in self.redirect_cache:
                 checked_urls.add(request.url)
                 new_url = self.redirect_cache.get(request.url)
                 if new_url in checked_urls:
+                    # prevent infinite loop
                     break
                 request.url = new_url
 
         # Get the appropriate adapter to use
+        # Find an appropriate adapter from a pool of adapters
+        # self.adapters is a Ordereddict. The key is prefix,
+        # the value is the adapter (HTTPAdapter). Basically,
+        # HTTPAdapter has send() and close().
+        # self.adapters is maintained by self.mount
         adapter = self.get_adapter(url=request.url)
 
         # Start time (approximately) of the request
@@ -681,6 +692,9 @@ class Session(SessionRedirectMixin):
 
         Adapters are sorted in descending order by key length."""
 
+        # find all the keys that has length less than prefix.
+        # these are the keys you need to delete and move after
+        # prefix
         self.adapters[prefix] = adapter
         keys_to_move = [k for k in self.adapters if len(k) < len(prefix)]
 

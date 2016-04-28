@@ -156,6 +156,7 @@ def remove_cookie_by_name(cookiejar, name, domain=None, path=None):
         cookiejar.clear(domain, path, name)
 
 
+# Note that they don't put a 'pass' in the definition
 class CookieConflictError(RuntimeError):
     """There are two cookies that meet the criteria specified in the cookie jar.
     Use .get and .set and include domain and path args in order to be more specific."""

@@ -19,6 +19,7 @@ except ImportError:
     def where():
         """Return the preferred certificate bundle."""
         # vendored bundle inside Requests
+        # a way to find the directory of this file.
         return os.path.join(os.path.dirname(__file__), 'cacert.pem')
 
 if __name__ == '__main__':

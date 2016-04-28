@@ -600,10 +600,15 @@ def select_proxy(url, proxies):
     :param url: The url being for the request
     :param proxies: A dictionary of schemes or schemes and hosts to proxy URLs
     """
+    # proxies may be empty
     proxies = proxies or {}
+    # parse the url we passed in
     urlparts = urlparse(url)
+    # Try to get the proxy (value) by the url hostname
+    # Hmm, get() will return None if key is not found.
     proxy = proxies.get(urlparts.scheme+'://'+urlparts.hostname)
     if proxy is None:
+        # cannot find by the hostname, try just url scheme
         proxy = proxies.get(urlparts.scheme)
     return proxy
 
