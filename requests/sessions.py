@@ -569,6 +569,7 @@ class Session(SessionRedirectMixin):
         """Send a given PreparedRequest."""
         # Set defaults that the hooks can utilize to ensure they always have
         # the correct parameters to reproduce the previous request.
+        #
         kwargs.setdefault('stream', self.stream)
         kwargs.setdefault('verify', self.verify)
         kwargs.setdefault('cert', self.cert)
@@ -616,11 +617,13 @@ class Session(SessionRedirectMixin):
         r.elapsed = datetime.utcnow() - start
 
         # Response manipulation hooks
+        # This is to call the hook callable object defined by the user
+        # after we have sent the request
+        # 'r' is the response of the request
         r = dispatch_hook('response', hooks, r, **kwargs)
 
         # Persist cookies
         if r.history:
-
             # If the hooks create history then we want those cookies too
             for resp in r.history:
                 extract_cookies_to_jar(self.cookies, resp.request, resp.raw)

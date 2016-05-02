@@ -196,14 +196,19 @@ class HTTPAdapter(BaseAdapter):
             cert_loc = None
 
             # Allow self-specified cert location.
-            # TODO: verify must be True here, why the checking?
+            # verify must be True here, why the checking?
+            # Hmm, it seems that they allow 'verity' to hold a cert location
+            # as a string. So if verify is not True, and 'verify' is evaluated
+            # to be True, it must contain string, which is the location.
+            # This is some confusing code here.
             if verify is not True:
                 cert_loc = verify
 
             if not cert_loc:
                 cert_loc = DEFAULT_CA_BUNDLE_PATH
 
-            # TODO: why separating from above?
+            # why separating from above?
+            # If all the assignments above do not happen, we raise exception.
             if not cert_loc:
                 raise Exception("Could not find a suitable SSL CA certificate bundle.")
 
@@ -383,8 +388,8 @@ class HTTPAdapter(BaseAdapter):
         conn = self.get_connection(request.url, proxies)
 
         self.cert_verify(conn, request.url, verify, cert)
-        url = self.request_url(request, proxies)
-        self.add_headers(request)
+        url = self.request_url(request, proxies) # get a url
+        self.add_headers(request) # does nothing
 
         chunked = not (request.body is None or 'Content-Length' in request.headers)
 
@@ -416,11 +421,13 @@ class HTTPAdapter(BaseAdapter):
                     timeout=timeout
                 )
 
-            # Send the request.
             else:
+                # Send the request.
+                # It uses urllib3's facilities.
                 if hasattr(conn, 'proxy_pool'):
                     conn = conn.proxy_pool
 
+                # really? called a 'protected' method of a third party lib?
                 low_conn = conn._get_conn(timeout=DEFAULT_POOL_TIMEOUT)
 
                 try:
@@ -433,6 +440,7 @@ class HTTPAdapter(BaseAdapter):
 
                     low_conn.endheaders()
 
+                    # body is prepared in models.py
                     for i in request.body:
                         low_conn.send(hex(len(i))[2:].encode('utf-8'))
                         low_conn.send(b'\r\n')
@@ -449,6 +457,7 @@ class HTTPAdapter(BaseAdapter):
                         # For compatibility with Python 2.6 versions and back
                         r = low_conn.getresponse()
 
+                    # HTTPResponse is from urllib3
                     resp = HTTPResponse.from_httplib(
                         r,
                         pool=conn,
@@ -463,12 +472,15 @@ class HTTPAdapter(BaseAdapter):
                     raise
 
         except (ProtocolError, socket.error) as err:
+            # convert urllib3 exceptions to local exceptions
             raise ConnectionError(err, request=request)
 
         except MaxRetryError as e:
             if isinstance(e.reason, ConnectTimeoutError):
                 # TODO: Remove this in 3.0.0: see #2811
+                # TODO: Who sets e.reason?
                 if not isinstance(e.reason, NewConnectionError):
+                    # See how argument is passed by request=request
                     raise ConnectTimeout(e, request=request)
 
             if isinstance(e.reason, ResponseError):

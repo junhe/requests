@@ -17,6 +17,29 @@ class RequestException(IOError):
     def __init__(self, *args, **kwargs):
         """
         Initialize RequestException with `request` and `response` objects.
+
+        __init__() with *args and **kwargs should be used in the base class
+        (as it is here), because it does not limit the arguments could be
+        used in the subclass.
+        In contrast, if you do __init__(self, request=None, response=None),
+        and if you don't override __init__() in subclass, you cannot
+        accept other arguments in subclass constructor.
+        If you override __init__() in sublcass, it would be like:
+        def __init__(self, request=None, reponse=None, other=None):
+            self.other = other
+            super(RequestException, self).__init__(request, reponse)
+
+        The benefit of using *args, **kwargs is to avoid redundant code and
+        get centralized management of initialization. For example, if we
+        want to handle one more argument of a particular subclass, we
+        could just handle it in the base class __init__().
+
+        What's more important, RequestException is itself a subclass,
+        if you do __init__(self, request=None, response=None), you will
+        limit the arguments that could pass to RequestException's superclass.
+
+        When writing your own code, just consider the possibility of using
+        *args and **kwargs in __init__().
         """
         response = kwargs.pop('response', None)
         self.response = response
